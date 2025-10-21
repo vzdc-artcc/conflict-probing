@@ -1,0 +1,13 @@
+.venv
+vertical_speed_data.json
+.idea
+__pycache__/
+*.pyc
+.DS_Store
+.env
+.env.*log
+logs/
+*.sqlite3
+*.db
+*.log
+*.bak
