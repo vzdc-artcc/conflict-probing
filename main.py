@@ -154,7 +154,7 @@ if __name__ == "__main__":
         # print(f"Execution time: {time.time() - start:.2f} seconds")
         # print()
         if len(conflicting) == 0:
-            print("No conflicts detected!")
+            print("No alerts detected!")
         else:
             for aircraft in conflicting:
                 print(f"{aircraft['callsign']} <-> {aircraft['conflicting_callsign']}: {aircraft['conflict_level']} in {aircraft['conflict_time_minutes_ahead']} min(s)")
