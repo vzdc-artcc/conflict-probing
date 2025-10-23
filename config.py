@@ -6,9 +6,9 @@ VATSIM_DATA_URL = "https://data.vatsim.net/v3/vatsim-data.json"
 
 # Geographic bounds for monitoring
 # (bottom-left latitude, bottom-left longitude)
-BOTTOM_LEFT_LIMIT = (32.0, -130.0)
+BOTTOM_LEFT_LIMIT = (33.5, -82.5)
 # (top-right latitude, top-right longitude)
-TOP_RIGHT_LIMIT = (48.0, -62.6)
+TOP_RIGHT_LIMIT = (41, -71.5)
 
 # Aircraft filtering
 ALTITUDE_LIMIT_FT = 18000  # Minimum altitude to track (FL180)
@@ -26,7 +26,7 @@ LATERAL_SEPARATION_RED_NM = 5.0  # Red alert threshold
 VERTICAL_SEPARATION_RED_FT = 1000.0  # Red alert threshold
 LATERAL_SEPARATION_YELLOW_NM = 12.0  # Yellow alert threshold
 VERTICAL_SEPARATION_YELLOW_FT = 1000.0  # Yellow alert threshold
-VERTICAL_TOLERANCE_FT = 100  # Added margin for vertical calculations
+VERTICAL_TOLERANCE_FT = 150  # Added margin for vertical calculations
 
 # FAA NASR Data
 NAVDATA_PATH = "navdata_feather/"
