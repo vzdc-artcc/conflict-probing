@@ -4,11 +4,11 @@ REPEAT_TIME=15
 
 VATSIM_DATA_URL = "https://data.vatsim.net/v3/vatsim-data.json"
 
-# USA Coords
-BOTTOM_LEFT_LIMIT = (32, -130)
-TOP_RIGHT_LIMIT = (48, -62.6)
+# USA COORDINATES
+BOTTOM_LEFT_LIMIT = (25, -130)
+TOP_RIGHT_LIMIT = (50, -62.6)
 
-# ZDC Coords
+# ZDC COORDINATES
 # BOTTOM_LEFT_LIMIT = (33.5, -82.5)
 # TOP_RIGHT_LIMIT = (41, -71.5)
 
@@ -18,7 +18,7 @@ VS_ZERO_RANGE = (-150, 150)
 WAYPOINT_TOLERANCE_NM = 4
 
 PREDICTION_MINUTES_AHEAD = 10
-PREDICTION_PRECISION_MINUTES = 1
+PREDICTION_PRECISION_MINUTES = 0.1
 
 LATERAL_SEPARATION_RED_NM = 5.0
 VERTICAL_SEPARATION_RED_FT = 1000.0
@@ -34,6 +34,7 @@ APT_FILE = NAVDATA_PATH + "APT_BASE.feather"
 FILE_READ_MODE = 'feather'
 
 VERTICAL_SPEED_CACHE_FILE = "data/vertical_speed_data.json"
+DATA_CACHE_FILE = "data/cache.json"
 
 def print_config_vars():
     for name, val in globals().items():
@@ -42,3 +43,13 @@ def print_config_vars():
         if inspect.isroutine(val) or inspect.isclass(val) or inspect.ismodule(val):
             continue
         print(f"\t{name} = {repr(val)} ")
+
+def config_vars():
+    cfg = {}
+    for name, val in globals().items():
+        if name.startswith('__'):
+            continue
+        if inspect.isroutine(val) or inspect.isclass(val) or inspect.ismodule(val):
+            continue
+        cfg[name] = val
+    return cfg

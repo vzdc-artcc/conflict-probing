@@ -65,7 +65,8 @@ def get_lat_lon(point):
         entry = nav[nav['NAV_ID'] == point]
 
     if entry.empty:
-        entry = apt[apt['ARPT_ID'] == point]
+        if len(point) == 4 and point[0] == 'K':
+            entry = apt[apt['ARPT_ID'] == point[1:]]
 
     if entry.empty:
         return None

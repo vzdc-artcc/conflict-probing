@@ -15,15 +15,26 @@ def route_to_lat_lon(route_str):
             for awy_wp in airway_points:
                 awy_wp_coords = get_lat_lon(awy_wp)
                 if awy_wp_coords:
-                    coordinates.append((awy_wp, awy_wp_coords))
+                    lat, lon = awy_wp_coords
+                    coordinates.append({
+                        'name': awy_wp,
+                        'latitude': lat,
+                        'longitude': lon
+                    })
 
             continue
 
         waypoint_coordinates = get_lat_lon(waypoint)
         if waypoint_coordinates:
-            coordinates.append((waypoint, waypoint_coordinates))
+            lat, lon = waypoint_coordinates
+            coordinates.append({
+                'name': waypoint,
+                'latitude': lat,
+                'longitude': lon
+            })
 
     return coordinates
+
 
 def is_airway_regex(str):
     import re

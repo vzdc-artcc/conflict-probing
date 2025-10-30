@@ -9,7 +9,7 @@ def get_current_route_segment(waypoints, current_position):
         if next_waypoint is None:
             break
 
-        result = is_point_on_path(current_waypoint[1], next_waypoint[1], current_position)
+        result = is_point_on_path((current_waypoint['latitude'], current_waypoint['longitude']), (next_waypoint['latitude'], next_waypoint['longitude']), current_position)
         if result is not None and result[0]:
             on_path, nm_dev = result
             return (current_waypoint, next_waypoint), nm_dev
