@@ -38,8 +38,7 @@ jobs:
       - name: Set version number
         run: |
           VERSION=${{ steps.extract_branch.outputs.branch }}.${{ env.COMMIT_HASH }}
-          echo "VERSION=${VERSION}" >> $GITHUB_ENV
-          fi
+          echo "VERSION=${VERSION}" >> $GITHUB_EN
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
