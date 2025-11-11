@@ -15,6 +15,39 @@ apt = load_faa_nasr_data(APT_FILE, FILE_READ_MODE)
 nav = load_faa_nasr_data(NAV_FILE, FILE_READ_MODE)
 fix = load_faa_nasr_data(FIX_FILE, FILE_READ_MODE)
 awy = load_faa_nasr_data(AWY_FILE, FILE_READ_MODE)
+sid = load_faa_nasr_data("navdata_csv/DP_RTE.csv", "csv")
+star = load_faa_nasr_data("navdata_csv/STAR_RTE.csv", "csv")
+
+def deconstruct_procedure(procedure, transition):
+    if (not procedure) or (not transition):
+        return []
+
+    procedure = procedure.upper()
+    transition = transition.upper()
+
+    star_points = star[star['TRANSITION_COMPUTER_CODE'] == f"{transition}.{procedure}"]
+    sid_points = sid[sid['TRANSITION_COMPUTER_CODE'] == f"{procedure}.{transition}"]
+
+    if sid_points.empty and star_points.empty:
+        if procedure.startswith(transition):
+            return [transition]
+        return []
+
+    sid_p = sort_points_by_seq(sid_points)
+    star_p = sort_points_by_seq(star_points)
+
+    if len(sid_p) > 0 and sid_p[len(sid_p) - 1] == transition:
+        sid_p = sid_p[:-1]
+    elif len(star_p) > 0 and star_p[0] == transition:
+        star_p = star_p[1:]
+
+    return sid_p + star_p
+
+def sort_points_by_seq(points):
+    if points.empty:
+        return []
+    sorted_points = points.sort_values('POINT_SEQ', ascending=False)
+    return sorted_points['POINT'].tolist()
 
 def deconstruct_awy(awy_id, from_fix, to_fix):
     awy_id = awy_id.upper()

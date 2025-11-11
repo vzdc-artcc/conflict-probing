@@ -3,7 +3,7 @@ from config import LATERAL_SEPARATION_RED_NM, VERTICAL_SEPARATION_RED_FT, \
 
 
 def check_below_threshold(threshold_lateral, threshold_vertical, lateral_distance, vertical_distance):
-    return lateral_distance <= threshold_lateral and vertical_distance <= threshold_vertical
+    return lateral_distance < threshold_lateral and vertical_distance < threshold_vertical
 
 
 def is_red_alert(lateral_distance, vertical_distance):

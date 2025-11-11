@@ -40,8 +40,8 @@ def get_aircraft_conflict_status():
            and ac['current_route_segment'][0] is not None
            and ac['current_route_segment'][1] is not None
            and ac['current_route_segment'][0] != ac['current_route_segment'][1]
-           and ac['current_route_segment'][0] != ac['departure']
-           and ac['current_route_segment'][1] != ac['arrival']
+           # and ac['current_route_segment'][0] != ac['departure']
+           # and ac['current_route_segment'][1] != ac['arrival']
     ]
     conflicts = {}
 
@@ -112,11 +112,13 @@ def get_aircraft_conflict_status():
                         ac_copy['conflicting_callsign'] = other_ac['callsign']
                         ac_copy['conflict_time_minutes_ahead'] = minute
                         ac_copy['conflict_level'] = get_status_text(severity)
+                        ac_copy['conflict_altitude_diff'] = abs(ac_alt - ac2_alt)
                         conflicts[cs] = {
                             'severity': severity,
                             'time': entry_time,
                             'conflicting_callsign': other_ac['callsign'],
                             'conflict_level': ac_copy['conflict_level'],
+                            # 'conflict_altitude_diff': ac_copy['conflict_altitude_diff'],
                             'ac': ac_copy
                         }
 

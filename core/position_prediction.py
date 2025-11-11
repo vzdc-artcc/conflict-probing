@@ -1,10 +1,9 @@
 import numpy as np
 
-from config import VS_ZERO_RANGE
+from config import VS_ZERO_RANGE, VERTICAL_TOLERANCE_FT
 from utils.great_circle import great_circle_destination, haversine_distance
 
 def track_between_points(lat1, lon1, lat2, lon2):
-    # convert degrees to radians
     lat1_rad, lon1_rad, lat2_rad, lon2_rad = map(np.radians, (lat1, lon1, lat2, lon2))
     dlon = lon2_rad - lon1_rad
     y = np.sin(dlon) * np.cos(lat2_rad)
@@ -13,22 +12,24 @@ def track_between_points(lat1, lon1, lat2, lon2):
     return float((bearing_deg + 360) % 360)
 
 def predict_lat_long_alt(lat, long, alt, vs, gs, trk, next_waypoint, waypoints, crz, mins):
-    # waypoints is a list of dicts with keys: 'name','latitude','longitude'
     next_waypoints = waypoints[waypoints.index(next_waypoint):]
 
     if not next_waypoints:
         return None, None, None
 
+    crz = int(crz)
     if VS_ZERO_RANGE[0] <= vs <= VS_ZERO_RANGE[1]:
         vs = 0
 
-    pred_alt = alt + (vs * mins)
+    if vs == 0 and (crz - VERTICAL_TOLERANCE_FT) <= alt <= (crz + VERTICAL_TOLERANCE_FT):
+        pred_alt = crz
+    else:
+        pred_alt = alt + (vs * mins)
 
-    if crz is not None and crz != "":
+    if crz is not None and crz > 0:
         try:
-            crz_int = int(crz)
-            if (vs < 0 and pred_alt < crz_int) or (vs > 0 and pred_alt > crz_int):
-                pred_alt = crz_int
+            if vs is not 0 and pred_alt > crz:
+                pred_alt = crz
         except (ValueError, TypeError):
             pass
 
@@ -55,5 +56,7 @@ def predict_lat_long_alt(lat, long, alt, vs, gs, trk, next_waypoint, waypoints, 
             return future_waypoint['latitude'], future_waypoint['longitude'], pred_alt
 
         distance_remaining = new_distance_remaining
+        lat = future_waypoint['latitude']
+        long = future_waypoint['longitude']
 
     return None, None, None

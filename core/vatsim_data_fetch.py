@@ -1,4 +1,4 @@
-from config import VATSIM_DATA_URL, BOTTOM_LEFT_LIMIT, TOP_RIGHT_LIMIT, ALTITUDE_LIMIT_FT
+from config import VATSIM_DATA_URL, BOTTOM_LEFT_LIMIT, TOP_RIGHT_LIMIT, ALTITUDE_FLOOR_FT
 from utils.vertical_speed import batch_compute_vertical_speed
 
 def fetch_vatsim_data():
@@ -23,7 +23,7 @@ def fetch_vatsim_data():
             continue
         elif pilot.get('flight_plan').get('flight_rules') == 'V':
             continue
-        elif lat is None or lon is None or altitude is None or (ALTITUDE_LIMIT_FT is not None and altitude < ALTITUDE_LIMIT_FT):
+        elif lat is None or lon is None or altitude is None or (ALTITUDE_FLOOR_FT is not None and altitude < ALTITUDE_FLOOR_FT):
             continue
         elif (lat < min_lat or lat > max_lat) or (lon < min_lon or lon > max_lon):
             continue
