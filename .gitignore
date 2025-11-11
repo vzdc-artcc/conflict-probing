@@ -11,3 +11,4 @@ logs/
 *.log
 *.bak
 /data
+navdata_feather
