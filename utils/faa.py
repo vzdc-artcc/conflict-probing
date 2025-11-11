@@ -1,22 +1,17 @@
 import pandas as pd
-from config import APT_FILE, FILE_READ_MODE, NAV_FILE, FIX_FILE, AWY_FILE
+from config import APT_FILE, NAV_FILE, FIX_FILE, AWY_FILE, SID_FILE, STAR_FILE
 from utils.great_circle import great_circle_destination
 
 
-def load_faa_nasr_data(path, data_type):
-    if data_type == "feather":
-        return pd.read_feather(path)
-    elif data_type == "csv":
-        return pd.read_csv(path)
+def load_faa_nasr_data(path):
+    return pd.read_feather(path)
 
-    return None
-
-apt = load_faa_nasr_data(APT_FILE, FILE_READ_MODE)
-nav = load_faa_nasr_data(NAV_FILE, FILE_READ_MODE)
-fix = load_faa_nasr_data(FIX_FILE, FILE_READ_MODE)
-awy = load_faa_nasr_data(AWY_FILE, FILE_READ_MODE)
-sid = load_faa_nasr_data("navdata_csv/DP_RTE.csv", "csv")
-star = load_faa_nasr_data("navdata_csv/STAR_RTE.csv", "csv")
+apt = load_faa_nasr_data(APT_FILE)
+nav = load_faa_nasr_data(NAV_FILE)
+fix = load_faa_nasr_data(FIX_FILE)
+awy = load_faa_nasr_data(AWY_FILE)
+sid = load_faa_nasr_data(SID_FILE)
+star = load_faa_nasr_data(STAR_FILE)
 
 def deconstruct_procedure(procedure, transition):
     if (not procedure) or (not transition):

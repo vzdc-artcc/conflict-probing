@@ -6,6 +6,7 @@ import os
 
 from config import REPEAT_TIME, DATA_CACHE_FILE, config_vars
 from conflict_probing import get_aircraft_conflict_status
+from feather import convert_all_navdata_csv_to_feather
 
 app = FastAPI()
 
@@ -47,6 +48,7 @@ def get_cached_data():
 
 @app.on_event("startup")
 def startup_event():
+    convert_all_navdata_csv_to_feather()
     update_cache()
 
 

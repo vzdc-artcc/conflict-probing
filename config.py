@@ -31,7 +31,8 @@ FIX_FILE = NAVDATA_PATH + "FIX_BASE.feather"
 NAV_FILE = NAVDATA_PATH + "NAV_BASE.feather"
 AWY_FILE = NAVDATA_PATH + "AWY_BASE.feather"
 APT_FILE = NAVDATA_PATH + "APT_BASE.feather"
-FILE_READ_MODE = 'feather'
+SID_FILE = NAVDATA_PATH + "DP_RTE.feather"
+STAR_FILE = NAVDATA_PATH + "STAR_RTE.feather"
 
 VERTICAL_SPEED_CACHE_FILE = "data/vertical_speed_data.json"
 DATA_CACHE_FILE = "data/cache.json"

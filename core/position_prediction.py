@@ -17,6 +17,8 @@ def predict_lat_long_alt(lat, long, alt, vs, gs, trk, next_waypoint, waypoints, 
     if not next_waypoints:
         return None, None, None
 
+    if crz is not None and str(crz).startswith('FL'):
+        crz = int(str(crz).replace('FL', '') * 100)
     crz = int(crz)
     if VS_ZERO_RANGE[0] <= vs <= VS_ZERO_RANGE[1]:
         vs = 0
