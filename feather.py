@@ -1,9 +1,6 @@
 import shutil
 import zipfile
 from pathlib import Path
-
-import os
-
 import pandas as pd
 
 import requests
