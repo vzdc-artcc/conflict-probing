@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 
 import requests
-from datetime import datetime
+from datetime import datetime, timezone
 
 csv_dir = "navdata_csv"
 feather_dir = "navdata_feather"
@@ -24,7 +24,7 @@ def get_nasr_zip_name(date):
 
 def save_current_nasr_zip(temp_zip_path):
     for days_back in range(0, 28):
-        date = datetime.utcnow() - pd.Timedelta(days=days_back)
+        date = datetime.now(timezone.utc) - pd.Timedelta(days=days_back)
         zip_name = get_nasr_zip_name(date)
         test_url = NASR_DOWNLOAD_URL + zip_name
         response = requests.get(test_url, timeout=10)
