@@ -34,6 +34,19 @@ APT_FILE = NAVDATA_PATH + "APT_BASE.feather"
 SID_FILE = NAVDATA_PATH + "DP_RTE.feather"
 STAR_FILE = NAVDATA_PATH + "STAR_RTE.feather"
 
+FEATHER_DIR = "navdata_feather"
+CSV_DIR = "navdata_csv"
+NASR_DOWNLOAD_URL = "https://nfdc.faa.gov/webContent/28DaySub/extra/"
+NASR_REQUIRED_FILES = [
+    "APT_BASE.csv",
+    "AWY_BASE.csv",
+    "DP_RTE.csv",
+    "FIX_BASE.csv",
+    "NAV_BASE.csv",
+    "STAR_RTE.csv",
+]
+NASR_REQUIRED_FILES_SET = {name.upper() for name in NASR_REQUIRED_FILES}
+
 VERTICAL_SPEED_CACHE_FILE = "data/vertical_speed_data.json"
 DATA_CACHE_FILE = "data/cache.json"
 

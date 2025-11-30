@@ -1,22 +1,93 @@
+from datetime import datetime, timezone
+import shutil
+import zipfile
+from pathlib import Path
+
 import pandas as pd
-from config import APT_FILE, NAV_FILE, FIX_FILE, AWY_FILE, SID_FILE, STAR_FILE
+import requests
+
+from config import APT_FILE, NAV_FILE, FIX_FILE, AWY_FILE, SID_FILE, STAR_FILE, NASR_DOWNLOAD_URL, CSV_DIR, FEATHER_DIR, \
+    NASR_REQUIRED_FILES, NASR_REQUIRED_FILES_SET
 from utils.great_circle import great_circle_destination
 
+
+
+def get_nasr_zip_name(date):
+    return date.strftime("%d_%b_%Y_CSV.zip")
+
+def save_current_nasr_zip(temp_zip_path):
+    for days_back in range(0, 28):
+        date = datetime.now(timezone.utc) - pd.Timedelta(days=days_back)
+        zip_name = get_nasr_zip_name(date)
+        test_url = NASR_DOWNLOAD_URL + zip_name
+        response = requests.get(test_url, timeout=10)
+        print(f"Testing NASR URL: {test_url} - Status Code: {response.status_code}")
+        if response.status_code == 200 and response.headers.get('Content-Type') == 'application/zip':
+            temp_zip_path.touch(exist_ok=True)
+
+            with open(temp_zip_path, "wb") as f:
+                f.write(response.content)
+            print(f"Downloaded NASR zip file: {zip_name}")
+            return
+
+    raise RuntimeError("Could not find a valid NASR zip file in the last 28 days.")
+
+
+def ensure_navdata_directories() -> None:
+    Path(CSV_DIR).mkdir(parents=True, exist_ok=True)
+    Path(FEATHER_DIR).mkdir(parents=True, exist_ok=True)
+
+def ensure_required_csv_files() -> None:
+    ensure_navdata_directories()
+    missing = []
+    for filename in NASR_REQUIRED_FILES:
+        target = Path(CSV_DIR) / filename
+        if not target.exists():
+            target.touch()
+            missing.append(filename)
+    if missing:
+        print(
+            "Created placeholder CSV files for missing NASR datasets: "
+            + ", ".join(missing)
+        )
+
+def update_navdata_csv():
+    ensure_navdata_directories()
+    ensure_required_csv_files()
+    zip_path = Path(CSV_DIR) / "latest_nasr_download.zip"
+
+    try:
+        save_current_nasr_zip(zip_path)
+
+        with zipfile.ZipFile(zip_path) as archive:
+            csv_members = [m for m in archive.namelist() if m.lower().endswith(".csv")]
+            if not csv_members:
+                raise RuntimeError("No CSV files found inside NASR archive.")
+
+            for member in csv_members:
+                if Path(member).name.upper() not in NASR_REQUIRED_FILES_SET:
+                    continue
+
+                target_path = Path(CSV_DIR) / Path(member).name
+                with archive.open(member) as src, open(target_path, "wb") as dst:
+                    shutil.copyfileobj(src, dst)
+                print(f"Saved {target_path}")
+
+    finally:
+        if zip_path.exists():
+            zip_path.unlink()
+            pass
 
 def load_faa_nasr_data(path):
     return pd.read_feather(path)
 
-apt = load_faa_nasr_data(APT_FILE)
-nav = load_faa_nasr_data(NAV_FILE)
-fix = load_faa_nasr_data(FIX_FILE)
-awy = load_faa_nasr_data(AWY_FILE)
-sid = load_faa_nasr_data(SID_FILE)
-star = load_faa_nasr_data(STAR_FILE)
-
 def deconstruct_procedure(procedure, transition):
+
     if (not procedure) or (not transition):
         return []
 
+    sid = load_faa_nasr_data(SID_FILE)
+    star = load_faa_nasr_data(STAR_FILE)
     procedure = procedure.upper()
     transition = transition.upper()
 
@@ -45,6 +116,8 @@ def sort_points_by_seq(points):
     return sorted_points['POINT'].tolist()
 
 def deconstruct_awy(awy_id, from_fix, to_fix):
+    awy = load_faa_nasr_data(AWY_FILE)
+
     awy_id = awy_id.upper()
     awy_row = awy[awy['AWY_ID'] == awy_id]
 
@@ -73,6 +146,10 @@ def deconstruct_awy(awy_id, from_fix, to_fix):
 
 def get_lat_lon(point):
     import re
+
+    apt = load_faa_nasr_data(APT_FILE)
+    nav = load_faa_nasr_data(NAV_FILE)
+    fix = load_faa_nasr_data(FIX_FILE)
 
     if re.match(r"^[A-Z]{3}\d{3}\d{3}$", point):
         navaid = point[:3].upper()
