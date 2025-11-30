@@ -12,3 +12,4 @@ logs/
 *.bak
 /data
 navdata_feather
+navdata_csv

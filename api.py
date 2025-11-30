@@ -1,5 +1,6 @@
 from fastapi import FastAPI, BackgroundTasks
-from threading import Lock
+from threading import Lock, Thread
+from datetime import datetime, timedelta
 import time
 import json
 import os
@@ -13,6 +14,10 @@ app = FastAPI()
 cache_lock = Lock()
 last_update = 0
 is_updating = False
+nightly_refresh_thread: Thread | None = None
+
+NIGHTLY_REFRESH_LOG_PREFIX = "[Nightly Navdata Refresh]"
+
 
 def update_cache():
     global last_update, is_updating
@@ -21,11 +26,11 @@ def update_cache():
     is_updating = True
     try:
         conflicting, non_conflicting, timestamp = get_aircraft_conflict_status()
-        
+
         cache_dir = os.path.dirname(DATA_CACHE_FILE)
         if cache_dir and not os.path.exists(cache_dir):
             os.makedirs(cache_dir, exist_ok=True)
-        
+
         with cache_lock:
             with open(DATA_CACHE_FILE, "w") as f:
                 json.dump({
@@ -46,10 +51,40 @@ def get_cached_data():
             return json.load(f)
 
 
+def _seconds_until_local_midnight() -> float:
+    now = datetime.now()
+    tomorrow = (now.replace(hour=0, minute=0, second=0, microsecond=0)
+                + timedelta(days=1))
+    return max((tomorrow - now).total_seconds(), 0)
+
+
+def _nightly_navdata_loop() -> None:
+    while True:
+        sleep_seconds = _seconds_until_local_midnight()
+        print(f"{NIGHTLY_REFRESH_LOG_PREFIX} Sleeping {sleep_seconds:.0f}s until midnight")
+        time.sleep(sleep_seconds)
+        try:
+            print(f"{NIGHTLY_REFRESH_LOG_PREFIX} Starting navdata refresh")
+            convert_all_navdata_csv_to_feather()
+            update_cache()
+            print(f"{NIGHTLY_REFRESH_LOG_PREFIX} Successfully refreshed navdata")
+        except Exception as exc:
+            print(f"{NIGHTLY_REFRESH_LOG_PREFIX} Refresh failed: {exc}")
+
+
+def _start_nightly_navdata_thread() -> None:
+    global nightly_refresh_thread
+    if nightly_refresh_thread and nightly_refresh_thread.is_alive():
+        return
+    nightly_refresh_thread = Thread(target=_nightly_navdata_loop, daemon=True)
+    nightly_refresh_thread.start()
+
+
 @app.on_event("startup")
 def startup_event():
     convert_all_navdata_csv_to_feather()
     update_cache()
+    _start_nightly_navdata_thread()
 
 
 @app.get("/data")
@@ -64,6 +99,14 @@ def get_data(background_tasks: BackgroundTasks):
         background_tasks.add_task(update_cache)
 
     return data
+
+
+@app.get("/decode")
+def decode_route(route: str = ""):
+    from core.flightplan_route import route_to_lat_lon
+    if route.strip() == "":
+        return []
+    return route_to_lat_lon(route)
 
 
 @app.get("/config")
