@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 import shutil
 import zipfile
 from pathlib import Path
+from functools import lru_cache
 
 import pandas as pd
 import requests
@@ -9,6 +10,9 @@ import requests
 from config import APT_FILE, NAV_FILE, FIX_FILE, AWY_FILE, SID_FILE, STAR_FILE, NASR_DOWNLOAD_URL, CSV_DIR, FEATHER_DIR, \
     NASR_REQUIRED_FILES, NASR_REQUIRED_FILES_SET
 from utils.great_circle import great_circle_destination
+
+# Cache loaded DataFrames at module level
+_navdata_cache = {}
 
 
 
@@ -79,7 +83,14 @@ def update_navdata_csv():
             pass
 
 def load_faa_nasr_data(path):
-    return pd.read_feather(path)
+    if path not in _navdata_cache:
+        _navdata_cache[path] = pd.read_feather(path)
+    return _navdata_cache[path]
+
+def clear_navdata_cache():
+    """Call this after nightly refresh to reload fresh data."""
+    _navdata_cache.clear()
+    get_lat_lon.cache_clear()
 
 def deconstruct_procedure(procedure, transition):
 
@@ -144,6 +155,7 @@ def deconstruct_awy(awy_id, from_fix, to_fix):
 
     return waypoints
 
+@lru_cache(maxsize=10000)
 def get_lat_lon(point):
     import re
 
