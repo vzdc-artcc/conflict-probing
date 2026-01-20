@@ -84,6 +84,7 @@ def _start_nightly_navdata_thread() -> None:
 
 @app.on_event("startup")
 def startup_event():
+    clear_navdata_cache()  # Ensure clean start
     convert_all_navdata_csv_to_feather()
     update_cache()
     _start_nightly_navdata_thread()
