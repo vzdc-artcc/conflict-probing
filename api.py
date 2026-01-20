@@ -8,6 +8,7 @@ import os
 from config import REPEAT_TIME, DATA_CACHE_FILE, config_vars
 from conflict_probing import get_aircraft_conflict_status
 from feather import convert_all_navdata_csv_to_feather
+from utils.faa import clear_navdata_cache
 
 app = FastAPI()
 
@@ -66,6 +67,7 @@ def _nightly_navdata_loop() -> None:
         try:
             print(f"{NIGHTLY_REFRESH_LOG_PREFIX} Starting navdata refresh")
             convert_all_navdata_csv_to_feather()
+            clear_navdata_cache()  # Clear cache so new data is loaded
             update_cache()
             print(f"{NIGHTLY_REFRESH_LOG_PREFIX} Successfully refreshed navdata")
         except Exception as exc:
