@@ -7,7 +7,7 @@ from functools import lru_cache
 import pandas as pd
 import requests
 
-from config import APT_FILE, NAV_FILE, FIX_FILE, AWY_FILE, SID_FILE, STAR_FILE, NASR_DOWNLOAD_URL, CSV_DIR, FEATHER_DIR, \
+from config import APT_FILE, ATC_FILE, NAV_FILE, FIX_FILE, AWY_FILE, SID_FILE, STAR_FILE, NASR_DOWNLOAD_URL, CSV_DIR, FEATHER_DIR, \
     NASR_REQUIRED_FILES, NASR_REQUIRED_FILES_SET
 from utils.great_circle import great_circle_destination
 
@@ -191,3 +191,11 @@ def get_lat_lon(point):
     lat = entry.iloc[0]['LAT_DECIMAL']
     lon = entry.iloc[0]['LONG_DECIMAL']
     return lat, lon
+
+def get_tower_hours(icao_id):
+    atc = load_faa_nasr_data(ATC_FILE)
+    entry = atc[atc['ICAO_ID'] == icao_id.upper()]
+    if entry.empty:
+        return None
+
+    return entry.iloc[0]['TWR_HRS']

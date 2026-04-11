@@ -111,6 +111,10 @@ def decode_route(route: str = ""):
         return []
     return route_to_lat_lon(route)
 
+@app.get("/tower_hours")
+def tower_hours(icao: str = ""):
+    from utils.faa import get_tower_hours
+    return get_tower_hours(icao)
 
 @app.get("/config")
 def config():
