@@ -192,10 +192,10 @@ def get_lat_lon(point):
     lon = entry.iloc[0]['LONG_DECIMAL']
     return lat, lon
 
-def get_tower_hours(icao_id):
+def get_atc_data(airport_id):
     atc = load_faa_nasr_data(ATC_FILE)
-    entry = atc[atc['ICAO_ID'] == icao_id.upper()]
+    entry = atc[(atc['FACILITY_ID'] == airport_id.upper()) | (atc['ICAO_ID'] == airport_id.upper())]
     if entry.empty:
         return None
 
-    return entry.iloc[0]['TWR_HRS']
+    return entry.iloc[0].to_dict()
