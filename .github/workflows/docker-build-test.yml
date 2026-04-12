@@ -1,0 +1,34 @@
+name: Build Test on Pull Request
+
+on:
+  pull_request:
+    branches:
+      - master
+      - next
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Extract commit hash
+        id: commit_hash
+        run: |
+          COMMIT_HASH=${GITHUB_SHA::7}  # Get the first 7 characters of the commit hash
+          echo "COMMIT_HASH=${COMMIT_HASH,,}" >> $GITHUB_ENV  # Convert to lowercase
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: |
+            test:pr-${{ github.event.pull_request.number }}
+            test:${{ env.COMMIT_HASH }}
+
