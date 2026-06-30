@@ -214,7 +214,9 @@ def get_prd_routes(departure=None, arrival=None):
         mask &= df["Orig"].str.upper() == departure.upper()
     if arrival:
         mask &= df["Dest"].str.upper() == arrival.upper()
-    return df[mask].to_dict(orient="records")
+    import math
+    records = df[mask].to_dict(orient="records")
+    return [{k: None if isinstance(v, float) and math.isnan(v) else v for k, v in r.items()} for r in records]
 
 
 def get_atc_data(airport_id):
