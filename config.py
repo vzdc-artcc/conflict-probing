@@ -50,6 +50,10 @@ NASR_REQUIRED_FILES = [
 ]
 NASR_REQUIRED_FILES_SET = {name.upper() for name in NASR_REQUIRED_FILES}
 
+PRD_DOWNLOAD_URL = "https://www.fly.faa.gov/rmt/data_file/prefroutes_db.csv"
+PRD_CSV_FILE = CSV_DIR + "/prefroutes_db.csv"
+PRD_FEATHER_FILE = NAVDATA_PATH + "prefroutes_db.feather"
+
 VERTICAL_SPEED_CACHE_FILE = "data/vertical_speed_data.json"
 DATA_CACHE_FILE = "data/cache.json"
 

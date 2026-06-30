@@ -8,7 +8,7 @@ import os
 from config import REPEAT_TIME, DATA_CACHE_FILE, config_vars
 from conflict_probing import get_aircraft_conflict_status
 from feather import convert_all_navdata_csv_to_feather
-from utils.faa import clear_navdata_cache
+from utils.faa import clear_navdata_cache, update_prd_csv
 
 app = FastAPI()
 
@@ -74,6 +74,32 @@ def _nightly_navdata_loop() -> None:
             print(f"{NIGHTLY_REFRESH_LOG_PREFIX} Refresh failed: {exc}")
 
 
+WEEKLY_PRD_REFRESH_LOG_PREFIX = "[Weekly PRD Refresh]"
+
+
+def _weekly_prd_loop() -> None:
+    while True:
+        time.sleep(7 * 24 * 60 * 60)
+        try:
+            print(f"{WEEKLY_PRD_REFRESH_LOG_PREFIX} Starting PRD refresh")
+            update_prd_csv()
+            clear_navdata_cache()
+            print(f"{WEEKLY_PRD_REFRESH_LOG_PREFIX} Successfully refreshed PRD data")
+        except Exception as exc:
+            print(f"{WEEKLY_PRD_REFRESH_LOG_PREFIX} Refresh failed: {exc}")
+
+
+weekly_prd_thread: Thread | None = None
+
+
+def _start_weekly_prd_thread() -> None:
+    global weekly_prd_thread
+    if weekly_prd_thread and weekly_prd_thread.is_alive():
+        return
+    weekly_prd_thread = Thread(target=_weekly_prd_loop, daemon=True)
+    weekly_prd_thread.start()
+
+
 def _start_nightly_navdata_thread() -> None:
     global nightly_refresh_thread
     if nightly_refresh_thread and nightly_refresh_thread.is_alive():
@@ -88,6 +114,7 @@ def startup_event():
     convert_all_navdata_csv_to_feather()
     update_cache()
     _start_nightly_navdata_thread()
+    _start_weekly_prd_thread()
 
 
 @app.get("/data")
@@ -119,3 +146,13 @@ def atc_data(id: str = ""):
 @app.get("/config")
 def config():
     return config_vars()
+
+@app.get("/prd")
+def prd(departure: str = "", arrival: str = ""):
+    from utils.faa import get_prd_routes
+    dep = departure.strip().upper() or None
+    arr = arrival.strip().upper() or None
+    if not dep and not arr:
+        return {"error": "Provide at least one of: departure, arrival"}
+    return get_prd_routes(departure=dep, arrival=arr)
+

@@ -2,7 +2,7 @@ from pathlib import Path
 import pandas as pd
 
 from config import FEATHER_DIR, NASR_REQUIRED_FILES, CSV_DIR
-from utils.faa import update_navdata_csv, ensure_required_csv_files, ensure_navdata_directories
+from utils.faa import update_navdata_csv, ensure_required_csv_files, ensure_navdata_directories, update_prd_csv
 
 def convert_all_navdata_csv_to_feather():
     ensure_navdata_directories()
@@ -22,6 +22,7 @@ def convert_all_navdata_csv_to_feather():
         print(f"Converted '{csv_path}' -> '{feather_path}'")
 
     print("All CSV files have been converted to Feather format.")
+    update_prd_csv()
 
 def safe_read_csv(path, encodings=("utf-8", "latin-1"), **kwargs):
     """Try multiple encodings when reading CSV; set low_memory=False by default."""
