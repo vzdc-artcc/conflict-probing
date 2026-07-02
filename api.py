@@ -148,10 +148,10 @@ def config():
     return config_vars()
 
 @app.get("/prd")
-def prd(departure: str = "", arrival: str = ""):
+def prd(origin: str = "", dest: str = ""):
     from utils.faa import get_prd_routes
-    dep = departure.strip().upper() or None
-    arr = arrival.strip().upper() or None
+    dep = origin.strip().upper() or None
+    arr = dest.strip().upper() or None
     if not dep and not arr:
         return {"error": "Provide at least one of: departure, arrival"}
     return get_prd_routes(departure=dep, arrival=arr)
