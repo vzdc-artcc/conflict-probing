@@ -214,9 +214,38 @@ def get_prd_routes(departure=None, arrival=None):
         mask &= df["Orig"].str.upper() == departure.upper()
     if arrival:
         mask &= df["Dest"].str.upper() == arrival.upper()
-    import math
+
+    def _clean_value(value):
+        if pd.isna(value):
+            return None
+        return value
+
+    def _as_int(value):
+        value = _clean_value(value)
+        if value is None:
+            return None
+        return int(value)
+
     records = df[mask].to_dict(orient="records")
-    return [{k: None if isinstance(v, float) and math.isnan(v) else v for k, v in r.items()} for r in records]
+    return [
+        {
+            "origin": _clean_value(record.get("Orig")),
+            "route": _clean_value(record.get("Route String")),
+            "destination": _clean_value(record.get("Dest")),
+            "hours1": _clean_value(record.get("Hours1")),
+            "hours2": _clean_value(record.get("Hours2")),
+            "hours3": _clean_value(record.get("Hours3")),
+            "type": _clean_value(record.get("Type")),
+            "area": _clean_value(record.get("Area")),
+            "altitude": _clean_value(record.get("Altitude")),
+            "aircraft": _clean_value(record.get("Aircraft")),
+            "flow": _clean_value(record.get("Direction")),
+            "seq": _as_int(record.get("Seq")),
+            "d_artcc": _clean_value(record.get("DCNTR")),
+            "a_artcc": _clean_value(record.get("ACNTR")),
+        }
+        for record in records
+    ]
 
 
 def get_atc_data(airport_id):
