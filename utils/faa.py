@@ -8,7 +8,7 @@ import pandas as pd
 import requests
 
 from config import APT_FILE, ATC_FILE, NAV_FILE, FIX_FILE, AWY_FILE, SID_FILE, STAR_FILE, NASR_DOWNLOAD_URL, CSV_DIR, FEATHER_DIR, \
-    NASR_REQUIRED_FILES, NASR_REQUIRED_FILES_SET
+    NASR_REQUIRED_FILES, NASR_REQUIRED_FILES_SET, PRD_DOWNLOAD_URL, PRD_CSV_FILE, PRD_FEATHER_FILE
 from utils.great_circle import great_circle_destination
 
 # Cache loaded DataFrames at module level
@@ -191,6 +191,33 @@ def get_lat_lon(point):
     lat = entry.iloc[0]['LAT_DECIMAL']
     lon = entry.iloc[0]['LONG_DECIMAL']
     return lat, lon
+
+def update_prd_csv():
+    from feather import safe_read_csv
+    ensure_navdata_directories()
+    response = requests.get(PRD_DOWNLOAD_URL, timeout=30)
+    if response.status_code != 200:
+        raise RuntimeError(f"Failed to download PRD data: HTTP {response.status_code}")
+    with open(PRD_CSV_FILE, "wb") as f:
+        f.write(response.content)
+    print(f"Downloaded PRD CSV to {PRD_CSV_FILE}")
+
+    df = safe_read_csv(PRD_CSV_FILE)
+    df.to_feather(PRD_FEATHER_FILE)
+    print(f"Converted PRD CSV -> {PRD_FEATHER_FILE}")
+
+
+def get_prd_routes(departure=None, arrival=None):
+    df = load_faa_nasr_data(PRD_FEATHER_FILE)
+    mask = pd.Series([True] * len(df), index=df.index)
+    if departure:
+        mask &= df["Orig"].str.upper() == departure.upper()
+    if arrival:
+        mask &= df["Dest"].str.upper() == arrival.upper()
+    import math
+    records = df[mask].to_dict(orient="records")
+    return [{k: None if isinstance(v, float) and math.isnan(v) else v for k, v in r.items()} for r in records]
+
 
 def get_atc_data(airport_id):
     atc = load_faa_nasr_data(ATC_FILE)
