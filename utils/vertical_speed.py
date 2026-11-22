@@ -3,6 +3,8 @@ import os
 import time
 from config import VERTICAL_SPEED_CACHE_FILE
 
+VERTICAL_SPEED_HISTORY_MAX_AGE_SECONDS = 600
+
 
 def batch_compute_vertical_speed(aircraft_list):
     dirpath = os.path.dirname(VERTICAL_SPEED_CACHE_FILE)
@@ -14,6 +16,14 @@ def batch_compute_vertical_speed(aircraft_list):
             data = json.load(f)
     else:
         data = {}
+
+    cutoff = time.time() - VERTICAL_SPEED_HISTORY_MAX_AGE_SECONDS
+    data = {
+        callsign: entry
+        for callsign, entry in data.items()
+        if isinstance(entry, dict)
+        and entry.get('timestamp', 0) >= cutoff
+    }
 
     for aircraft in aircraft_list:
         new_data, vertical_speed = compute_vertical_speed(aircraft['callsign'], aircraft['altitude'], data)
@@ -35,7 +45,7 @@ def compute_vertical_speed(callsign, current_altitude, data):
         prev_altitude = prev['altitude']
         prev_time = prev['timestamp']
         time_diff = now - prev_time
-        if 0 < time_diff < 600:
+        if 0 < time_diff < VERTICAL_SPEED_HISTORY_MAX_AGE_SECONDS:
             vertical_speed = ((current_altitude - prev_altitude) / time_diff) * 60
             vertical_speed = int(vertical_speed)
 

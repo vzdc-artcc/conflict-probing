@@ -13,18 +13,17 @@ from utils.faa import clear_navdata_cache, update_prd_csv
 app = FastAPI()
 
 cache_lock = Lock()
+update_lock = Lock()
 last_update = 0
-is_updating = False
 nightly_refresh_thread: Thread | None = None
 
 NIGHTLY_REFRESH_LOG_PREFIX = "[Nightly Navdata Refresh]"
 
 
 def update_cache():
-    global last_update, is_updating
-    if is_updating:
+    global last_update
+    if not update_lock.acquire(blocking=False):
         return
-    is_updating = True
     try:
         conflicting, non_conflicting, timestamp = get_aircraft_conflict_status()
 
@@ -41,7 +40,7 @@ def update_cache():
                 }, f)
         last_update = timestamp
     finally:
-        is_updating = False
+        update_lock.release()
 
 
 def get_cached_data():
